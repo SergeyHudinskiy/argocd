@@ -5,14 +5,16 @@ metadata:
   namespace: openshift-gitops
 spec:
   generators:
-  - git:
-      repoURL: https://github.com/SergeyHudinskiy/argocd.git
-      revision: main
-      directories:
-      - path: apps/*
+    - git:
+        repoURL: https://github.com/SergeyHudinskiy/argocd.git
+        revision: main
+        directories:
+          - path: apps/*
   template:
     metadata:
       name: "{{ path.basename }}"
+      labels:
+        app: "{{ path.basename }}"
     spec:
       project: default
       syncPolicy:
@@ -26,3 +28,18 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: default
+  strategy:
+    type: RollingSync
+    rollingSync:
+      steps:
+        - matchExpressions:
+          - key: app
+            operator: In
+            values:
+              - app1
+              - app3
+        - matchExpressions:
+          - key: app
+            operator: In
+            values:
+              - app2
